@@ -211,13 +211,15 @@ class MainState extends FlxUIState {
 
         var saveFrame:FlxButton = new FlxButton(10, 25, "Save Current Frame", function()
 		{
-            var file = '${inputArray[curSelected]}/${daSprite.frame.name}';
-            if (FileSystem.exists('OUTPUT/$file.png')) {
-                FileSystem.deleteFile('OUTPUT/$file.png');
-            }
-            saveBitmapFromFrame(daSprite.frame, file, getAnimRect(daSprite.animation.curAnim));
-            if (FileSystem.exists('OUTPUT/$file.png')) {
-                FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+            if (daSprite.animation.curAnim != null) {
+                var file = '${inputArray[curSelected]}/${daSprite.frame.name}';
+                if (FileSystem.exists('OUTPUT/$file.png')) {
+                    FileSystem.deleteFile('OUTPUT/$file.png');
+                }
+                saveBitmapFromFrame(daSprite.frame, file, getAnimRect(daSprite.animation.curAnim));
+                if (FileSystem.exists('OUTPUT/$file.png')) {
+                    FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+                }
             }
 		});
         saveFrame.setGraphicSize(Std.int(saveFrame.width), Std.int(saveFrame.height * 2));
@@ -225,17 +227,19 @@ class MainState extends FlxUIState {
 
         var saveAnim:FlxButton = new FlxButton(saveFrame.x + 100, 25, "Save Current Animation", function()
         {
-            var daAnim = daSprite.animation.curAnim;
-            var checkName = '';
-            for (frame in daAnim.frames) {
-                var daFrame = daSprite.frames.frames[frame];
-                saveBitmapFromFrame(daFrame, '${inputArray[curSelected]}/${daFrame.name}', getAnimRect(daAnim));
-                if (checkName.length < 1) {
-                    checkName = daFrame.name;
+            if (daSprite.animation.curAnim != null) {
+                var daAnim = daSprite.animation.curAnim;
+                var checkName = '';
+                for (frame in daAnim.frames) {
+                    var daFrame = daSprite.frames.frames[frame];
+                    saveBitmapFromFrame(daFrame, '${inputArray[curSelected]}/${daFrame.name}', getAnimRect(daAnim));
+                    if (checkName.length < 1) {
+                        checkName = daFrame.name;
+                    }
                 }
-            }
-            if (FileSystem.exists('OUTPUT/${inputArray[curSelected]}/$checkName.png')) {
-                FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+                if (FileSystem.exists('OUTPUT/${inputArray[curSelected]}/$checkName.png')) {
+                    FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+                }
             }
         });
         saveAnim.setGraphicSize(Std.int(saveAnim.width), Std.int(saveAnim.height * 2));
@@ -243,23 +247,25 @@ class MainState extends FlxUIState {
 
         var saveAllFrames:FlxButton = new FlxButton(saveAnim.x + 100, 25, "Save All Frames", function()
         {
-            var folder = 'OUTPUT/${inputArray[curSelected]}';
-            if (FileSystem.exists(folder) && FileSystem.isDirectory(folder)) {
-                for (i in FileSystem.readDirectory(folder)) {
-                    var path = Path.join([folder, i]);
-                    if (!FileSystem.isDirectory(path)) {
-                        FileSystem.deleteFile(path);
+            if (daSprite.animation.curAnim != null) {
+                var folder = 'OUTPUT/${inputArray[curSelected]}';
+                if (FileSystem.exists(folder) && FileSystem.isDirectory(folder)) {
+                    for (i in FileSystem.readDirectory(folder)) {
+                        var path = Path.join([folder, i]);
+                        if (!FileSystem.isDirectory(path)) {
+                            FileSystem.deleteFile(path);
+                        }
                     }
                 }
-            }
-            for (i in daSprite.animation.getAnimationList()) {
-                for (frame in i.frames) {
-                    var daFrame = daSprite.frames.frames[frame];
-                    saveBitmapFromFrame(daFrame, '${inputArray[curSelected]}/${daFrame.name}', getAnimRect(i));
+                for (i in daSprite.animation.getAnimationList()) {
+                    for (frame in i.frames) {
+                        var daFrame = daSprite.frames.frames[frame];
+                        saveBitmapFromFrame(daFrame, '${inputArray[curSelected]}/${daFrame.name}', getAnimRect(i));
+                    }
                 }
-            }
-            if (FileSystem.exists(folder) && FileSystem.isDirectory(folder) && FileSystem.readDirectory(folder).length > 0) {
-                FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+                if (FileSystem.exists(folder) && FileSystem.isDirectory(folder) && FileSystem.readDirectory(folder).length > 0) {
+                    FlxG.sound.play('assets/sounds/confirmMenu.ogg');
+                }
             }
         });
         saveAllFrames.setGraphicSize(Std.int(saveAllFrames.width), Std.int(saveAllFrames.height * 2));
@@ -310,14 +316,16 @@ class MainState extends FlxUIState {
 		}
 
         if (!blockInput) {
-            var controlArray = [FlxG.keys.justPressed.LEFT, FlxG.keys.justPressed.RIGHT];
-                    
-            for (i in 0...controlArray.length) {
-                if (controlArray[i]) {
-                    var negaMult = -1;
-                    if (i % 2 == 1) negaMult = 1;
-                    changeSelection(negaMult);
-                    FlxG.sound.play('assets/sounds/scrollMenu.ogg');
+            if (inputArray.length > 1) {
+                var controlArray = [FlxG.keys.justPressed.LEFT, FlxG.keys.justPressed.RIGHT];
+                        
+                for (i in 0...controlArray.length) {
+                    if (controlArray[i]) {
+                        var negaMult = -1;
+                        if (i % 2 == 1) negaMult = 1;
+                        changeSelection(negaMult);
+                        FlxG.sound.play('assets/sounds/scrollMenu.ogg');
+                    }
                 }
             }
 
@@ -361,7 +369,7 @@ class MainState extends FlxUIState {
                         }
                     }
                 }
-                if (currentData.animations.length > 1) {
+                if (currentData != null && currentData.animations.length > 1) {
                     if (FlxG.keys.justPressed.UP) {
                         --curAnimation;
                         if (curAnimation < 0) {
@@ -507,144 +515,146 @@ class MainState extends FlxUIState {
     }
 
     function reloadSpriteImage() {
-        var curInput = inputArray[curSelected];
-        switch (inputTypes.get(curInput)) {
-            case SPARROW:
-                if (textures.exists(curInput)) {
-                    daSprite.frames = textures.get(curInput);
-                } else {
-                    trace('HAVING TO MAKE $curInput');
-                    var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
-                    var xml:String = File.getContent('INPUT/$curInput.xml');
-                    daSprite.frames = FlxAtlasFrames.fromSparrow(bitmap, xml);
-                    textures.set(curInput, daSprite.frames);
-                }
-            case PACKER:
-                if (textures.exists(curInput)) {
-                    daSprite.frames = textures.get(curInput);
-                } else {
-                    trace('HAVING TO MAKE $curInput');
-                    var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
-                    var txt:String = File.getContent('INPUT/$curInput.txt');
-                    daSprite.frames = FlxAtlasFrames.fromSpriteSheetPacker(bitmap, txt);
-                    textures.set(curInput, daSprite.frames);
-                }
-            case TEXTURE:
-                if (textures.exists(curInput)) {
-                    daSprite.frames = textures.get(curInput);
-                } else { //should already be preloaded but just in case
-                    trace('HAVING TO MAKE $curInput');
-                    daSprite.frames = AtlasFrameMaker.construct('INPUT/$curInput');
-                    textures.set(curInput, daSprite.frames);
-                }
-            case PACKERJSON:
-                if (textures.exists(curInput)) {
-                    daSprite.frames = textures.get(curInput);
-                } else {
-                    trace('HAVING TO MAKE $curInput');
-                    var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
-                    var json:String = File.getContent('INPUT/$curInput.json');
-                    daSprite.frames = FlxAtlasFrames.fromTexturePackerJson(bitmap, json);
-                    textures.set(curInput, daSprite.frames);
-                }
-        }
+        if (inputArray.length > 0 && inputArray[curSelected] != null) {
+            var curInput = inputArray[curSelected];
+            switch (inputTypes.get(curInput)) {
+                case SPARROW:
+                    if (textures.exists(curInput)) {
+                        daSprite.frames = textures.get(curInput);
+                    } else {
+                        trace('HAVING TO MAKE $curInput');
+                        var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
+                        var xml:String = File.getContent('INPUT/$curInput.xml');
+                        daSprite.frames = FlxAtlasFrames.fromSparrow(bitmap, xml);
+                        textures.set(curInput, daSprite.frames);
+                    }
+                case PACKER:
+                    if (textures.exists(curInput)) {
+                        daSprite.frames = textures.get(curInput);
+                    } else {
+                        trace('HAVING TO MAKE $curInput');
+                        var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
+                        var txt:String = File.getContent('INPUT/$curInput.txt');
+                        daSprite.frames = FlxAtlasFrames.fromSpriteSheetPacker(bitmap, txt);
+                        textures.set(curInput, daSprite.frames);
+                    }
+                case TEXTURE:
+                    if (textures.exists(curInput)) {
+                        daSprite.frames = textures.get(curInput);
+                    } else { //should already be preloaded but just in case
+                        trace('HAVING TO MAKE $curInput');
+                        daSprite.frames = AtlasFrameMaker.construct('INPUT/$curInput');
+                        textures.set(curInput, daSprite.frames);
+                    }
+                case PACKERJSON:
+                    if (textures.exists(curInput)) {
+                        daSprite.frames = textures.get(curInput);
+                    } else {
+                        trace('HAVING TO MAKE $curInput');
+                        var bitmap:BitmapData = BitmapData.fromFile('INPUT/$curInput.png');
+                        var json:String = File.getContent('INPUT/$curInput.json');
+                        daSprite.frames = FlxAtlasFrames.fromTexturePackerJson(bitmap, json);
+                        textures.set(curInput, daSprite.frames);
+                    }
+            }
 
-        if (dataMap.exists(curInput)) {
-            var data = dataMap.get(curInput);
-            for (i in data.animations) {
-                switch inputTypes.get(curInput) {
-                    case SPARROW:
-                        daSprite.animation.addByPrefix(i.name, '${i.name}0', 24, false);
-                    case PACKER:
-                        daSprite.animation.addByPrefix(i.name, '${i.name}_', 24, false);
-                    case TEXTURE:
-                        daSprite.animation.addByPrefix(i.name, i.name, 24, false);
-                    case PACKERJSON:
-                        daSprite.animation.addByPrefix(i.name, '${i.name} instance ', 24, false);
-                }
-                if (daSprite.animation.curAnim == null) {
-                    daSprite.animation.play(i.name);
-                }
-            }
-        } else if (inputTypes.get(curInput) == TEXTURE) {
-            var newData:SpritesheetData = {
-                animations: [],
-                flipX: false,
-                flipY: false,
-                noAntialiasing: false,
-                scale: 1,
-                angle: 0
-            };
-            for (i in AtlasFrameMaker.getFrameLabels('INPUT/$curInput')) {
-                daSprite.animation.addByPrefix(i, i, false);
-                if (daSprite.animation.curAnim == null) {
-                    daSprite.animation.play(i);
-                }
-                newData.animations.push({
-                    name: i
-                });
-            }
-            dataMap.set(curInput, newData);
-        } else {
-            var stupidAnims:Array<String> = [];
-            var newData:SpritesheetData = {
-                animations: [],
-                flipX: false,
-                flipY: false,
-                noAntialiasing: false,
-                scale: 1,
-                angle: 0
-            };
-            for (i in daSprite.frames.frames) {
-                if (i != null) {
-                    switch (inputTypes.get(curInput)) {
+            if (dataMap.exists(curInput)) {
+                var data = dataMap.get(curInput);
+                for (i in data.animations) {
+                    switch inputTypes.get(curInput) {
                         case SPARROW:
-                            var daName = i.name.substr(0, i.name.length - 4);
-                            if (!stupidAnims.contains(daName)) {
-                                daSprite.animation.addByPrefix(daName, '${daName}0', 24, false);
-                                if (daSprite.animation.curAnim == null) {
-                                    daSprite.animation.play(daName);
-                                }
-                                newData.animations.push({
-                                    name: daName
-                                });
-                                stupidAnims.push(daName);
-                            }
+                            daSprite.animation.addByPrefix(i.name, '${i.name}0', 24, false);
                         case PACKER:
-                            var daName = i.name.substr(0, i.name.lastIndexOf('_'));
-                            if (!stupidAnims.contains(daName)) {
-                                daSprite.animation.addByPrefix(daName, '${daName}_', 24, false);
-                                if (daSprite.animation.curAnim == null) {
-                                    daSprite.animation.play(daName);
-                                }
-                                newData.animations.push({
-                                    name: daName
-                                });
-                                stupidAnims.push(daName);
-                            }
+                            daSprite.animation.addByPrefix(i.name, '${i.name}_', 24, false);
                         case TEXTURE:
+                            daSprite.animation.addByPrefix(i.name, i.name, 24, false);
                         case PACKERJSON:
-                            var daName = i.name.substr(0, i.name.lastIndexOf('instance ') - 1);
-                            if (!stupidAnims.contains(daName)) {
-                                daSprite.animation.addByPrefix(daName, daName, 24, false);
-                                if (daSprite.animation.curAnim == null) {
-                                    daSprite.animation.play(daName);
-                                }
-                                newData.animations.push({
-                                    name: daName
-                                });
-                                stupidAnims.push(daName);
-                            }
+                            daSprite.animation.addByPrefix(i.name, '${i.name} instance ', 24, false);
+                    }
+                    if (daSprite.animation.curAnim == null) {
+                        daSprite.animation.play(i.name);
                     }
                 }
+            } else if (inputTypes.get(curInput) == TEXTURE) {
+                var newData:SpritesheetData = {
+                    animations: [],
+                    flipX: false,
+                    flipY: false,
+                    noAntialiasing: false,
+                    scale: 1,
+                    angle: 0
+                };
+                for (i in AtlasFrameMaker.getFrameLabels('INPUT/$curInput')) {
+                    daSprite.animation.addByPrefix(i, i, false);
+                    if (daSprite.animation.curAnim == null) {
+                        daSprite.animation.play(i);
+                    }
+                    newData.animations.push({
+                        name: i
+                    });
+                }
+                dataMap.set(curInput, newData);
+            } else {
+                var stupidAnims:Array<String> = [];
+                var newData:SpritesheetData = {
+                    animations: [],
+                    flipX: false,
+                    flipY: false,
+                    noAntialiasing: false,
+                    scale: 1,
+                    angle: 0
+                };
+                for (i in daSprite.frames.frames) {
+                    if (i != null) {
+                        switch (inputTypes.get(curInput)) {
+                            case SPARROW:
+                                var daName = i.name.substr(0, i.name.length - 4);
+                                if (!stupidAnims.contains(daName)) {
+                                    daSprite.animation.addByPrefix(daName, '${daName}0', 24, false);
+                                    if (daSprite.animation.curAnim == null) {
+                                        daSprite.animation.play(daName);
+                                    }
+                                    newData.animations.push({
+                                        name: daName
+                                    });
+                                    stupidAnims.push(daName);
+                                }
+                            case PACKER:
+                                var daName = i.name.substr(0, i.name.lastIndexOf('_'));
+                                if (!stupidAnims.contains(daName)) {
+                                    daSprite.animation.addByPrefix(daName, '${daName}_', 24, false);
+                                    if (daSprite.animation.curAnim == null) {
+                                        daSprite.animation.play(daName);
+                                    }
+                                    newData.animations.push({
+                                        name: daName
+                                    });
+                                    stupidAnims.push(daName);
+                                }
+                            case TEXTURE:
+                            case PACKERJSON:
+                                var daName = i.name.substr(0, i.name.lastIndexOf('instance ') - 1);
+                                if (!stupidAnims.contains(daName)) {
+                                    daSprite.animation.addByPrefix(daName, daName, 24, false);
+                                    if (daSprite.animation.curAnim == null) {
+                                        daSprite.animation.play(daName);
+                                    }
+                                    newData.animations.push({
+                                        name: daName
+                                    });
+                                    stupidAnims.push(daName);
+                                }
+                        }
+                    }
+                }
+                dataMap.set(curInput, newData);
             }
-            dataMap.set(curInput, newData);
+            currentData = dataMap.get(curInput);
+            loadCurrentData();
+            daSprite.setGraphicSize(Std.int(daSprite.width * scaleStepper.value));
+            daSprite.updateHitbox();
+            daSprite.angle = angleStepper.value;
         }
-        currentData = dataMap.get(curInput);
-        loadCurrentData();
-        daSprite.setGraphicSize(Std.int(daSprite.width * scaleStepper.value));
-        daSprite.updateHitbox();
-        daSprite.angle = angleStepper.value;
     }
 
     function saveBitmapFromFrame(frame:FlxFrame, file:String, rect:Rectangle) {
@@ -735,10 +745,15 @@ class MainState extends FlxUIState {
 			
 		} else if (id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper)) {
 			if (sender == scaleStepper || sender == angleStepper) {
-                var lastAnim = daSprite.animation.name;
+                var lastAnim = '';
+                if (daSprite.animation.curAnim != null) {
+                    lastAnim = daSprite.animation.name;
+                }
                 saveCurrentData();
                 reloadSpriteImage();
-                daSprite.animation.play(lastAnim, true);
+                if (lastAnim.length > 0) {
+                    daSprite.animation.play(lastAnim, true);
+                }
             }
 		}
 	}
@@ -771,20 +786,24 @@ class MainState extends FlxUIState {
     }
 
     function saveCurrentData() {
-        currentData.flipX = flipXCheckBox.checked;
-        currentData.flipY = flipYCheckBox.checked;
-        currentData.noAntialiasing = noAntialiasingCheckBox.checked;
-        currentData.scale = scaleStepper.value;
-        currentData.angle = angleStepper.value;
+        if (currentData != null) {
+            currentData.flipX = flipXCheckBox.checked;
+            currentData.flipY = flipYCheckBox.checked;
+            currentData.noAntialiasing = noAntialiasingCheckBox.checked;
+            currentData.scale = scaleStepper.value;
+            currentData.angle = angleStepper.value;
 
-        dataMap.set(inputArray[curSelected], currentData);
+            dataMap.set(inputArray[curSelected], currentData);
+        }
     }
 
     function loadCurrentData() {
-        flipXCheckBox.checked = currentData.flipX;
-        flipYCheckBox.checked = currentData.flipY;
-        noAntialiasingCheckBox.checked = currentData.noAntialiasing;
-        scaleStepper.value = currentData.scale;
-        angleStepper.value = currentData.angle;
+        if (currentData != null) {
+            flipXCheckBox.checked = currentData.flipX;
+            flipYCheckBox.checked = currentData.flipY;
+            noAntialiasingCheckBox.checked = currentData.noAntialiasing;
+            scaleStepper.value = currentData.scale;
+            angleStepper.value = currentData.angle;
+        }
     }
 }
