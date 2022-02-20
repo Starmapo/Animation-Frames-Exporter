@@ -108,7 +108,7 @@ jobs:
       - name: Publish Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
-          name: windowsBuild
+          name: windows32Build
           path: export/32bit/windows/bin
   buildMac:
     runs-on: macos-latest
