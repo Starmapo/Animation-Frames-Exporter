@@ -43,7 +43,7 @@ class AtlasFrameMaker extends FlxFramesCollection
 
 		var bitmap = BitmapData.fromFile('$key/spritemap.png');
 		var graphic = FlxGraphic.fromBitmapData(bitmap);
-		var ss = new SpriteAnimationLibrary(animationData, atlasData, graphic.bitmap);
+		var ss = new SpriteAnimationLibrary(animationData, atlasData, bitmap);
 		var t = ss.createAnimation();
 		if (_excludeArray == null)
 		{
@@ -88,7 +88,7 @@ class AtlasFrameMaker extends FlxFramesCollection
 
 				if (firstPass)
 				{
-					frameSize.set(bitmapShit.width,bitmapShit.height);
+					frameSize.set(bitmapShit.width, bitmapShit.height);
 					firstPass = false;
 				}
 			}
@@ -100,7 +100,7 @@ class AtlasFrameMaker extends FlxFramesCollection
 			var b = FlxGraphic.fromBitmapData(bitMapArray[i]);
 			var theFrame = new FlxFrame(b);
 			theFrame.parent = b;
-			theFrame.name = animation + i;
+			theFrame.name = animation + '$' + i;
 			theFrame.sourceSize.set(frameSize.x,frameSize.y);
 			theFrame.frame = new FlxRect(0, 0, bitMapArray[i].width, bitMapArray[i].height);
 			daFramez.push(theFrame);

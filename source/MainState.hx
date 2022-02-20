@@ -2,7 +2,6 @@ package;
 
 import animateatlas.AtlasFrameMaker;
 import flash.display.PNGEncoderOptions;
-import flash.geom.Point;
 import flash.utils.ByteArray;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -567,7 +566,7 @@ class MainState extends FlxUIState {
                         case PACKER:
                             daSprite.animation.addByPrefix(i.name, '${i.name}_', 24, false);
                         case TEXTURE:
-                            daSprite.animation.addByPrefix(i.name, i.name, 24, false);
+                            daSprite.animation.addByPrefix(i.name, '${i.name}$', 24, false);
                         case PACKERJSON:
                             daSprite.animation.addByPrefix(i.name, '${i.name} instance ', 24, false);
                     }
@@ -585,7 +584,7 @@ class MainState extends FlxUIState {
                     angle: 0
                 };
                 for (i in AtlasFrameMaker.getFrameLabels('INPUT/$curInput')) {
-                    daSprite.animation.addByPrefix(i, i, false);
+                    daSprite.animation.addByPrefix(i, '$i$', false);
                     if (daSprite.animation.curAnim == null) {
                         daSprite.animation.play(i);
                     }
