@@ -1,1 +1,1 @@
-Exported frames will show up here
+Exported images will show up here
